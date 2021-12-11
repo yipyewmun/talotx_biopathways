@@ -4,3 +4,4 @@ streamlit
 networkx
 pyautogui
 pyvis
+streamlit-agraph
