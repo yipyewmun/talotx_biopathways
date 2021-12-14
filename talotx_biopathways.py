@@ -16,7 +16,6 @@ st.title('Network Graph Visualization of Biological Pathways')
 url = 'https://docs.google.com/spreadsheets/d/1zSuV2TWHMgCnzk-RZ0GvAhihpk2bdeV9L0dLTtGYUGc/edit#gid=1648521135'
 url2 =  url.replace('/edit#gid=', '/export?format=csv&gid=')
 df_interact = pd.read_csv(url2)
-# print(df_interact['id'])
 
 # Define selection options and sort alphabetically
 target_list = df_interact['target_1'].tolist() + df_interact['target_2'].tolist()
@@ -38,18 +37,18 @@ if refresh:
     pass
 
 # Implement multiselect dropdown menu for option selection
-# selected_targets = sideb.multiselect('Select target to visualize', target_list)
+selected_targets = sideb.multiselect('Select target to visualize', target_list)
+print(selected_targets)
 
 # Set info message on initial site load
-# if len(selected_targets) == 0:
-#     sideb.text('Please choose 1 target to get started')
+if len(selected_targets) == 0:
+    sideb.write('Please choose 1 target to get started')
 
-# # Create network graph when user selects >= 1 item
-# else:
-#     df_select = df_interact.loc[df_interact['target_1'].isin(selected_targets) | \
-#                                 df_interact['target_2'].isin(selected_targets)]
-#     df_select = df_select.reset_index(drop=True)
-#     print(df_select)
+# Create network graph when user selects >= 1 item
+else:
+    df_select = df_interact.loc[df_interact['target_1'].isin(selected_targets) | \
+                                df_interact['target_2'].isin(selected_targets)]
+    df_select = df_select.reset_index(drop=True)
 
 #     # Create networkx graph object from pandas dataframe
 #     G = nx.from_pandas_edgelist(df_select, 'target_1', 'target_2', 'weight')
@@ -94,40 +93,102 @@ if refresh:
 nodes = []
 edges = []
 
-for index, row in df_interact.iterrows():
-    nodes.append(
-        Node(
-            id=row['target_1'],
-            label=row['target_1'],
-            size=400,
-        )
-    )
+try:
+    for index, row in df_select.iterrows():
+        if row['target_1'] in selected_targets: 
+            nodes.append(
+                Node(
+                    id=row['target_1'],
+                    label=row['target_1'],
+                    size=800,
+                    color="#FF0000"
+                )
+            )
 
-    nodes.append(
-        Node(
-            id=row['target_2'],
-            label=row['target_2'],
-            size=400,
-        )
-    )
+            nodes.append(
+                Node(
+                    id=row['target_2'],
+                    label=row['target_2'],
+                    size=800,
+                )
+            )
 
-    edges.append(
-        Edge(
-            source=row['target_1'],
-            label=row['action'],
-            target=row['target_2'],
-            type="CURVE_SMOOTH"
-        )
-    )
+            edges.append(
+                Edge(
+                    source=row['target_1'],
+                    label=row['action'],
+                    target=row['target_2'],
+                    type="STRAIGHT",
+                    strokeWidth=3,
+                    labelPosition="center"
+                )
+            )
+        elif row['target_2'] in selected_targets:
+            nodes.append(
+                Node(
+                    id=row['target_1'],
+                    label=row['target_1'],
+                    size=800,
+                )
+            )
 
-config = Config(width=500, 
-                height=500, 
+            nodes.append(
+                Node(
+                    id=row['target_2'],
+                    label=row['target_2'],
+                    size=800,
+                    color="#FF0000"
+                )
+            )
+
+            edges.append(
+                Edge(
+                    source=row['target_1'],
+                    label=row['action'],
+                    target=row['target_2'],
+                    type="STRAIGHT",
+                    strokeWidth=3,
+                    labelPosition="center"
+                )
+            )
+        else:
+            nodes.append(
+                Node(
+                    id=row['target_1'],
+                    label=row['target_1'],
+                    size=800,
+                )
+            )
+
+            nodes.append(
+                Node(
+                    id=row['target_2'],
+                    label=row['target_2'],
+                    size=800,
+                )
+            )
+
+            edges.append(
+                Edge(
+                    source=row['target_1'],
+                    label=row['action'],
+                    target=row['target_2'],
+                    type="STRAIGHT",
+                    strokeWidth=3,
+                    labelPosition="center"
+                )
+            )
+except:
+    pass
+
+config = Config(width=1000, 
+                height=1000, 
                 directed=True,
                 nodeHighlightBehavior=True, 
                 highlightColor="#F7A7A6", # or "blue"
-                collapsible=True,
+                collapsible=False,
                 node={'labelProperty':'label'},
-                link={'labelProperty': 'label', 'renderLabel': True}
+                link={'labelProperty': 'label', 'renderLabel': True},
                 # **kwargs e.g. node_size=1000 or node_color="blue"
                 ) 
 
